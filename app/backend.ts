@@ -1,0 +1,5 @@
+import 'server-only';
+export const configured=()=>!!(process.env.SUPABASE_URL&&process.env.SUPABASE_ANON_KEY&&process.env.SUPABASE_SERVICE_ROLE_KEY&&process.env.ADMIN_EMAIL);
+export function config(){if(!configured())throw Error('Shop backend is not configured. Follow SETUP.md.');return {url:process.env.SUPABASE_URL!.replace(/\/$/,''),anon:process.env.SUPABASE_ANON_KEY!,secret:process.env.SUPABASE_SERVICE_ROLE_KEY!};}
+export async function rows(path:string,method='GET',body?:unknown,prefer='return=representation'):Promise<any[]>{const c=config();const r=await fetch(c.url+'/rest/v1/'+path,{method,headers:{apikey:c.secret,Authorization:'Bearer '+c.secret,'Content-Type':'application/json',Prefer:prefer},body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});if(!r.ok){console.error('Database request failed',r.status);throw Error('Database unavailable. Check Supabase settings and schema.');}return r.status===204?[]:await r.json();}
+export const eq=(s:string)=>encodeURIComponent(s);
